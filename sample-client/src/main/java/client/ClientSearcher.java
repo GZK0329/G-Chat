@@ -151,14 +151,12 @@ public class ClientSearcher {
                     serverInfoList.add(serverInfo);
                     receiveLatch.countDown();
                 }
-
-
             } catch (Exception Ignored) {
             }finally {
                 close();
             }
-
         }
+
             private void close(){
                 if(ds != null){
                     ds.close();

@@ -16,9 +16,32 @@ import java.net.Socket;
  **/
 
 public class TCPClient {
+    private final Socket socket;
+    private final ReaderHandler readerHandler;
+    private final PrintStream printStream;
+
+
+    public TCPClient(Socket socket, ReaderHandler readerHandler) throws IOException {
+        this.socket = socket;
+        this.readerHandler = readerHandler;
+        this.printStream = new PrintStream(socket.getOutputStream());
+    }
+
+    public void exit() {
+        readerHandler.exit();
+        CloseUtils.close(printStream);
+        CloseUtils.close(socket);
+    }
+
+
+    //发
+    public void send(String msg){
+        printStream.println(msg);
+    }
+
 
     //建立TCP连接
-    public static void linkWith(ServerInfo info) throws Exception {
+    public static TCPClient startWith(ServerInfo info) throws Exception {
         Socket socket = new Socket();
 
         socket.setSoTimeout(3000);
@@ -40,18 +63,21 @@ public class TCPClient {
             readerHandler.start();
 
             //输出
-            write(socket);
+            //write(socket);
 
-            readerHandler.exit();
+            return new TCPClient(socket, readerHandler);
+
+            //readerHandler.exit();
 
         } catch (Exception e) {
-            System.out.println("异常关闭!");
-        } finally {
-            socket.close();
-            System.out.println("退出客户端了");
+            System.out.println("异常! 关闭套接字!");
+            CloseUtils.close(socket);
         }
+
+        return null;
     }
 
+    //读
     private static class ReaderHandler extends Thread {
         private boolean done = false;
         private final InputStream inputStream;
@@ -93,7 +119,9 @@ public class TCPClient {
         }
     }
 
-    private static void write(Socket client) throws IOException {
+
+
+    /*private static void write(Socket client) throws IOException {
         //构建键盘输入流
         InputStream in = System.in;//字节流
         BufferedReader input = new BufferedReader(new InputStreamReader(in));//字节流 => 字符流 => bufferReader
@@ -112,7 +140,7 @@ public class TCPClient {
 
         input.close();
         socketPrintStream.close();
-    }
+    }*/
 
 
    /* public static void todo(Socket socket) {

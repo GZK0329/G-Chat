@@ -51,7 +51,6 @@ public class ClientHandler {
         writeHandler.exit();
         CloseUtils.close(client);
         System.out.println("客户端已经退出" + client.getInetAddress() + " " + client.getPort());
-
     }
 
     public void exitBySelf() {
@@ -69,9 +68,7 @@ public class ClientHandler {
         private boolean done = false;//结束标志
         private InputStream inputStream;//输入流
 
-        public ClientReaderHandler() {
 
-        }
 
         public ClientReaderHandler(InputStream inputStream) {
             this.inputStream = inputStream;
@@ -91,13 +88,13 @@ public class ClientHandler {
                     str = socketInput.readLine();
 
                     if (str == null) {
-                        System.out.println("无法获取数据");
+                        System.out.println("客户端已无法获取数据");
                         ClientHandler.this.exitBySelf();
+                        break;
                     }
                     //打印数据
                     //System.out.println(str);
                     clientHandlerCallBack.onNewMessageArrived(ClientHandler.this, str);
-
 
                 } while (!done);
 
