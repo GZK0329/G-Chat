@@ -6,12 +6,16 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="UDPSearch_TCP_channel" />
-        <module name="UDPSearch" />
+        <module name="sample-client" />
+        <module name="sample-server" />
+        <module name="lib-utils" />
+        <module name="sample-config" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
       <module name="chatRoom" target="8" />
+      <module name="UDPSearch" target="8" />
+      <module name="UDPSearch_TCP_channel" target="8" />
     </bytecodeTargetLevel>
   </component>
 </project>
