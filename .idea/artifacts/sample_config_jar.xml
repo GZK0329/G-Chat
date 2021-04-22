@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="sample-config:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/sample_config_jar</output-path>
+    <root id="archive" name="sample-config.jar">
+      <element id="module-output" name="sample-config" />
+    </root>
+  </artifact>
+</component>

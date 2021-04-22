@@ -9,6 +9,8 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * @Description: TODO
@@ -16,15 +18,17 @@ import java.util.List;
  * @Date: 2021/4/20
  **/
 
-public class TCPServer {
+public class TCPServer  implements ClientHandler.ClientHandlerCallBack{
 
     private final int port;
     private ClientListener mListener;
     private List<ClientHandler> clientHandlerList = new ArrayList<>();
+    private final ExecutorService forwardingThreadPoolExecutor;
 
 
     public TCPServer(int port) {
         this.port = port;
+        this.forwardingThreadPoolExecutor = Executors.newSingleThreadExecutor();
     }
 
     public boolean start() {
@@ -43,16 +47,43 @@ public class TCPServer {
         if (mListener != null) {
             mListener.exit();
         }
-        for (ClientHandler clientHandler : clientHandlerList) {
-            clientHandler.exit();
+        synchronized (TCPServer.this){
+            for (ClientHandler clientHandler : clientHandlerList) {
+                clientHandler.exit();
+            }
+            clientHandlerList.clear();
         }
-        clientHandlerList.clear();
+
+        forwardingThreadPoolExecutor.shutdownNow();
     }
 
-    public void broadcast(String str) {
+    public synchronized void broadcast(String str) {
         for (ClientHandler clientHandler : clientHandlerList) {
             clientHandler.send(str);
         }
+    }
+
+    @Override
+    public synchronized void onSelfClosed(ClientHandler handler) {
+        clientHandlerList.remove(handler);
+    }
+
+    @Override
+    public void onNewMessageArrived(ClientHandler handler, String msg) {
+        System.out.println("收到新客户端连接，新客户端信息:"+handler.getClientInfo()+",携带信息:"+msg);
+        //异步提交转发任务
+        forwardingThreadPoolExecutor.execute(
+                () ->{
+                    synchronized (TCPServer.this){
+                        for (ClientHandler clientHandler : clientHandlerList) {
+                            if(clientHandler.equals(handler)){
+                                continue;//如果是自己那么就跳过
+                            }
+                            clientHandler.send(msg);//不然就把消息转发
+                        }
+                    }
+                }
+        );
     }
 
 
@@ -82,16 +113,16 @@ public class TCPServer {
                 //异步处理收到的客户端
                 ClientHandler clientHandler = null;
                 try {
-                    clientHandler = new ClientHandler(client,
-                            handler ->  clientHandlerList.remove(handler));//相当于使用这个handler作为参数，实现了这个接口中的方法
-                    //等于使用clientHandlerList.remove(handler)实现了接口，使用handler作为参数执行这个方法
+                    clientHandler = new ClientHandler(client,TCPServer.this);//
 
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
 
                 clientHandler.readToPrint();
-                clientHandlerList.add(clientHandler);
+                synchronized (TCPServer.this){
+                    clientHandlerList.add(clientHandler);
+                }
             } while (!done);
         }
 
