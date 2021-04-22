@@ -69,7 +69,7 @@ public class TCPServer  implements ClientHandler.ClientHandlerCallBack{
     }
 
     @Override
-    public void onNewMessageArrived(ClientHandler handler, String msg) {
+    public void onNewMessageArrived(final ClientHandler handler,final String msg) {
         System.out.println("收到新客户端连接，新客户端信息:"+handler.getClientInfo()+",携带信息:"+msg);
         //异步提交转发任务
         forwardingThreadPoolExecutor.execute(
@@ -113,7 +113,7 @@ public class TCPServer  implements ClientHandler.ClientHandlerCallBack{
                 //异步处理收到的客户端
                 ClientHandler clientHandler = null;
                 try {
-                    clientHandler = new ClientHandler(client,TCPServer.this);//
+                    clientHandler = new ClientHandler(client,TCPServer.this);
 
                 } catch (IOException e) {
                     e.printStackTrace();
