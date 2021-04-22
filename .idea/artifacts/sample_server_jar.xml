@@ -1,0 +1,13 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="sample-server:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/sample_server_jar</output-path>
+    <root id="archive" name="sample-server.jar">
+      <element id="module-output" name="sample-server" />
+      <element id="module-output" name="sample-config" />
+      <element id="module-output" name="lib-utils" />
+      <element id="directory" name="META-INF">
+        <element id="file-copy" path="$PROJECT_DIR$/sample-server/src/main/java/META-INF/MANIFEST.MF" />
+      </element>
+    </root>
+  </artifact>
+</component>

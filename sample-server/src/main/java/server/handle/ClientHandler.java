@@ -21,14 +21,20 @@ public class ClientHandler {
     private final Socket client;
     private final ClientReaderHandler readerHandler;
     private final ClientWriteHandler writeHandler;
-    private final CloseNotify closeNotify;
+    private final ClientHandlerCallBack clientHandlerCallBack;
+    private final String clientInfo;
 
+    public String getClientInfo() {
+        return clientInfo;
+    }
 
-    public ClientHandler(Socket client, CloseNotify closeNotify) throws IOException {
+    public ClientHandler(Socket client, ClientHandlerCallBack clientHandlerCallBack)  throws IOException {
         this.readerHandler = new ClientReaderHandler(client.getInputStream());
         this.writeHandler = new ClientWriteHandler(client.getOutputStream());
         this.client = client;
-        this.closeNotify = closeNotify;
+        this.clientHandlerCallBack = clientHandlerCallBack;
+        this.clientInfo = "A["+client.getInetAddress().getHostAddress()+"],P["+client.getPort()+"]";
+        System.out.println("新客户端连接信息:" + clientInfo);
     }
 
     public void send(String str) {
@@ -50,11 +56,12 @@ public class ClientHandler {
 
     public void exitBySelf() {
         exit();
-        closeNotify.onSelfClosed(this);
+        clientHandlerCallBack.onSelfClosed(this);
     }
 
-    public interface CloseNotify {
+    public interface ClientHandlerCallBack {
         void onSelfClosed(ClientHandler handler);
+        void onNewMessageArrived(ClientHandler handler, String msg);
     }
 
 
@@ -74,7 +81,7 @@ public class ClientHandler {
         public void run() {
             super.run();
             try {
-                //包装城InputStreamReader
+                //包装成InputStreamReader
                 InputStreamReader inputReader = new InputStreamReader(inputStream);
                 //包装成BufferReader
                 BufferedReader socketInput = new BufferedReader(inputReader);
@@ -88,7 +95,9 @@ public class ClientHandler {
                         ClientHandler.this.exitBySelf();
                     }
                     //打印数据
-                    System.out.println(str);
+                    //System.out.println(str);
+                    clientHandlerCallBack.onNewMessageArrived(ClientHandler.this, str);
+
 
                 } while (!done);
 
