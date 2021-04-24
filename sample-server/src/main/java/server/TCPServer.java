@@ -1,13 +1,15 @@
 package server;
 
 
-
 import server.handle.ClientHandler;
+import utils.CloseUtils;
 
 import java.io.IOException;
-import java.net.ServerSocket;
-import java.net.Socket;
+import java.net.InetSocketAddress;
+
+import java.nio.channels.*;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -18,13 +20,14 @@ import java.util.concurrent.Executors;
  * @Date: 2021/4/20
  **/
 
-public class TCPServer  implements ClientHandler.ClientHandlerCallBack{
+public class TCPServer implements ClientHandler.ClientHandlerCallBack {
 
     private final int port;
-    private ClientListener mListener;
+    private ClientListener listener = new ClientListener();
     private List<ClientHandler> clientHandlerList = new ArrayList<>();
     private final ExecutorService forwardingThreadPoolExecutor;
-
+    private Selector selector;
+    private ServerSocketChannel server;
 
     public TCPServer(int port) {
         this.port = port;
@@ -33,8 +36,22 @@ public class TCPServer  implements ClientHandler.ClientHandlerCallBack{
 
     public boolean start() {
         try {
-            ClientListener listener = new ClientListener(port);
-            mListener = listener;
+            //创建一个选择器
+            Selector selector = Selector.open();
+            //创建一个服务端通道
+            ServerSocketChannel server = ServerSocketChannel.open();
+            //配置为非阻塞通道
+            server.configureBlocking(false);
+            //连接 监听本地服务器端口port
+            server.socket().bind(new InetSocketAddress(port));
+            //注册选择器 监听接收事件 也就是 Socket client = socket.accept();
+            server.register(selector, SelectionKey.OP_ACCEPT);
+
+            this.server = server;
+            this.selector = selector;
+
+            System.out.println("启动服务器注册"+server.getLocalAddress().toString());
+
             listener.start();
         } catch (Exception e) {
             e.printStackTrace();
@@ -43,11 +60,11 @@ public class TCPServer  implements ClientHandler.ClientHandlerCallBack{
         return true;
     }
 
-    public void stop() {
-        if (mListener != null) {
-            mListener.exit();
+    public void stop() throws IOException {
+        if (listener != null) {
+            listener.exit();
         }
-        synchronized (TCPServer.this){
+        synchronized (TCPServer.this) {
             for (ClientHandler clientHandler : clientHandlerList) {
                 clientHandler.exit();
             }
@@ -69,14 +86,14 @@ public class TCPServer  implements ClientHandler.ClientHandlerCallBack{
     }
 
     @Override
-    public void onNewMessageArrived(final ClientHandler handler,final String msg) {
-        System.out.println("收到新客户端连接，新客户端信息:"+handler.getClientInfo()+",携带信息:"+msg);
+    public void onNewMessageArrived(final ClientHandler handler, final String msg) {
+        System.out.println("收到新客户端连接，新客户端信息:" + handler.getClientInfo() + ",携带信息:" + msg);
         //异步提交转发任务
         forwardingThreadPoolExecutor.execute(
-                () ->{
-                    synchronized (TCPServer.this){
+                () -> {
+                    synchronized (TCPServer.this) {
                         for (ClientHandler clientHandler : clientHandlerList) {
-                            if(clientHandler.equals(handler)){
+                            if (clientHandler.equals(handler)) {
                                 continue;//如果是自己那么就跳过
                             }
                             clientHandler.send(msg);//不然就把消息转发
@@ -88,14 +105,7 @@ public class TCPServer  implements ClientHandler.ClientHandlerCallBack{
 
 
     private class ClientListener extends Thread {
-        private ServerSocket server;
         private boolean done;
-
-        public ClientListener(int port) throws IOException {
-            this.server = new ServerSocket(port);
-            System.out.println("服务器的信息: " + "\n" + "IP:" + server.getInetAddress() + "\n" +
-                    "port:" + server.getLocalPort());
-        }
 
         @Override
         public void run() {
@@ -103,25 +113,34 @@ public class TCPServer  implements ClientHandler.ClientHandlerCallBack{
             System.out.println("服务器已经准备好了");
 
             do {
-                Socket client = null;
                 try {
-                    client = server.accept();
+                    if (selector.select() == 0) {
+                        if (done) {
+                            return;
+                        }
+                        continue;
+                    }
+                    Iterator<SelectionKey> iterator = selector.selectedKeys().iterator();
+                    while (iterator.hasNext()) {
+
+                        SelectionKey key = iterator.next();
+                        iterator.remove();
+
+                        //可以接收
+                        if (key.isAcceptable()) {
+                            //通过ServerSocketChannel接收 获取SocketChannel
+                            SocketChannel clientChannel = server.accept();
+                            //配置为非阻塞
+                            clientChannel.configureBlocking(false);
+                            ClientHandler clientHandler = new ClientHandler(clientChannel, TCPServer.this);
+                            clientHandler.readToPrint();
+                            synchronized (TCPServer.this) {
+                                clientHandlerList.add(clientHandler);
+                            }
+                        }
+                    }
                 } catch (IOException e) {
                     continue;
-                }
-
-                //异步处理收到的客户端
-                ClientHandler clientHandler = null;
-                try {
-                    clientHandler = new ClientHandler(client,TCPServer.this);
-
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-
-                clientHandler.readToPrint();
-                synchronized (TCPServer.this){
-                    clientHandlerList.add(clientHandler);
                 }
             } while (!done);
         }
@@ -129,14 +148,12 @@ public class TCPServer  implements ClientHandler.ClientHandlerCallBack{
         private void exit() {
             done = true;
             try {
-                server.close();
-            } catch (IOException e) {
+                CloseUtils.close(server);
+                CloseUtils.close(selector);
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }
-
     }
-
-
 
 }

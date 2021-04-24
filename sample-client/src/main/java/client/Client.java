@@ -26,7 +26,6 @@ public class Client {
                 if(tcpClient == null) return;
                 //往服务器发
                 write(tcpClient);
-
             } catch (Exception e) {
                 e.printStackTrace();
             }finally {
