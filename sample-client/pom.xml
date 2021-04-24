@@ -10,6 +10,14 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>sample-client</artifactId>
+    <dependencies>
+        <dependency>
+            <groupId>top.gzk</groupId>
+            <artifactId>sample-config</artifactId>
+            <version>1.0.0</version>
+            <scope>compile</scope>
+        </dependency>
+    </dependencies>
 
     <properties>
         <maven.compiler.source>8</maven.compiler.source>

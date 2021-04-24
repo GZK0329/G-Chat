@@ -20,7 +20,6 @@ public class TCPClient {
     private final ReaderHandler readerHandler;
     private final PrintStream printStream;
 
-
     public TCPClient(Socket socket, ReaderHandler readerHandler) throws IOException {
         this.socket = socket;
         this.readerHandler = readerHandler;
@@ -33,17 +32,14 @@ public class TCPClient {
         CloseUtils.close(socket);
     }
 
-
     //发
     public void send(String msg){
         printStream.println(msg);
     }
 
-
     //建立TCP连接
     public static TCPClient startWith(ServerInfo info) throws Exception {
         Socket socket = new Socket();
-
         socket.setSoTimeout(3000);
         System.out.println(Inet4Address.getByName(info.getAddress()));
         System.out.println(info.getPort());
@@ -55,7 +51,6 @@ public class TCPClient {
         System.out.println("服务端信息:" + socket.getInetAddress() + socket.getPort());
 
         try {
-
             //改为读写操作
             //todo(socket);
             //输入流
