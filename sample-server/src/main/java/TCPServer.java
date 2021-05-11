@@ -1,3 +1,6 @@
+
+import handle.ClientHandler;
+
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -77,7 +80,7 @@ public class TCPServer {
                 ClientHandler clientHandler = null;
                 try {
                     clientHandler = new ClientHandler(client,
-                            handler ->  clientHandlerList.remove(handler));//相当于使用这个handler作为参数，实现了这个接口中的方法
+                            handler ->  clientHandlerList.remove(handler));//回调函数 相当于使用这个handler作为参数，实现了这个接口中的方法
                     //等于使用clientHandlerList.remove(handler)实现了接口，使用handler作为参数执行这个方法
 
                 } catch (IOException e) {
@@ -99,7 +102,4 @@ public class TCPServer {
         }
 
     }
-
-
-
 }

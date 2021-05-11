@@ -10,7 +10,7 @@ public class ByteUtils {
 
     /*
      * @Author GZK0329
-     * @Description
+     * @Description 检查头文件是否匹配
      * @Date 18:31 2021/4/21
      * @Param
      * @return true if obj

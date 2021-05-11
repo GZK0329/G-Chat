@@ -1,3 +1,7 @@
+
+
+import constants.ServerInfo;
+import constants.UDPConstants;
 import top.gzk.sample.MyConnect.utils.ByteUtils;
 
 import java.io.IOException;
@@ -31,7 +35,7 @@ public class ClientSearcher {
         try {
             listener = listen(receiveLatch);
             sendBroadCast();
-            receiveLatch.await(timeout, TimeUnit.MILLISECONDS);
+            receiveLatch.await(timeout, TimeUnit.MILLISECONDS);//将线程阻塞直到receiveLatch降为0或者设定阻塞时间过去
         } catch (Exception Ignored) {
         }
 
@@ -138,7 +142,7 @@ public class ClientSearcher {
                     }
 
                     String sn = new String(buffer, minLen, dataLen-minLen);
-                    //System.out.println(sn + "端口:" + serverPort + "IP:" + ip );
+                    System.out.println(sn + "端口:" + serverPort + "IP:" + ip );
 
                     ServerInfo serverInfo = new ServerInfo(sn, serverPort, ip);
 

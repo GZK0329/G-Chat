@@ -1,5 +1,7 @@
+package handle;
 
 import top.gzk.sample.MyConnect.utils.CloseUtils;
+
 
 import java.io.*;
 import java.net.Socket;
@@ -79,14 +81,12 @@ public class ClientHandler {
                 do {
                     //获取到内容
                     str = socketInput.readLine();
-
                     if (str == null) {
                         System.out.println("无法获取数据");
                         ClientHandler.this.exitBySelf();
                     }
                     //打印数据
                     System.out.println(str);
-
                 } while (!done);
 
             } catch (Exception e) {
@@ -105,7 +105,6 @@ public class ClientHandler {
             done = true;
             CloseUtils.close(inputStream);
         }
-
     }
 
     private class ClientWriteHandler {
@@ -115,12 +114,12 @@ public class ClientHandler {
 
         public ClientWriteHandler(OutputStream outputStream) {
             this.printStream = new PrintStream(outputStream);
-            this.executorService = Executors.newSingleThreadExecutor();
+            this.executorService = Executors.newSingleThreadExecutor();//工厂方法生成线程池服务
         }
 
         //发送str
         void send(String str) {
-            executorService.execute(new WriteRunnable(str));
+            executorService.execute(new WriteRunnable(str));//execute(@Param: callable/runnable任务 Callable/Runnable类型或者实现接口的类)
         }
 
         public void exit() {

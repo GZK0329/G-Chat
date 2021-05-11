@@ -1,3 +1,6 @@
+
+import constants.TCPConstants;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -11,14 +14,14 @@ import java.io.InputStreamReader;
 public class Server {
 
     public static void main(String[] args) {
-        UDPSearch_TCP.server.TCPServer tcpServer = new UDPSearch_TCP.server.TCPServer(TCPConstants.PORT_SERVER);
+        TCPServer tcpServer = new TCPServer(TCPConstants.PORT_SERVER);
         boolean isSucceed = tcpServer.start();
         if (!isSucceed) {
             System.out.println("Start TCP server failed!");
             return;
         }
 
-        UDPSearch_TCP.server.UDPProvider.start(TCPConstants.PORT_SERVER);
+        UDPProvider.start(TCPConstants.PORT_SERVER);
 
         //向所有客户端发送信息
         BufferedReader bufferedReader = new
@@ -36,7 +39,7 @@ public class Server {
         }
 
 
-        UDPSearch_TCP.server.UDPProvider.stop();
+        UDPProvider.stop();
         tcpServer.stop();
     }
 
