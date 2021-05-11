@@ -1,6 +1,5 @@
 package server.handle;
 
-
 import utils.CloseUtils;
 
 import java.io.*;
@@ -59,7 +58,6 @@ public class ClientHandler {
     }
 
     public void readToPrint() {
-
         //启动读线程
         readerHandler.start();
     }
