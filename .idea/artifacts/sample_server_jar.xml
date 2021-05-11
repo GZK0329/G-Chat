@@ -4,7 +4,7 @@
     <root id="archive" name="sample-server.jar">
       <element id="module-output" name="sample-server" />
       <element id="module-output" name="sample-config" />
-      <element id="module-output" name="lib-utils" />
+      <element id="module-output" name="lib-clink" />
       <element id="directory" name="META-INF">
         <element id="file-copy" path="$PROJECT_DIR$/sample-server/src/main/java/META-INF/MANIFEST.MF" />
       </element>

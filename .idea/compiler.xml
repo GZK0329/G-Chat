@@ -7,8 +7,8 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="sample-client" />
+        <module name="lib-clink" />
         <module name="sample-server" />
-        <module name="lib-utils" />
         <module name="sample-config" />
       </profile>
     </annotationProcessing>

@@ -20,7 +20,7 @@ public class ClientTest {
         if (serverInfo == null) return;
         List<TCPClient> tcpClientList = new ArrayList<>();
         int size = 0;//统计成功连接数量
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < 100; i++) {
             try {
                 TCPClient tcpClient = TCPClient.startWith(serverInfo);
                 if (tcpClient == null) {

@@ -1,7 +1,9 @@
 package server;
 
 
+import connect.IOContext;
 import constants.TCPConstants;
+import impl.IOSelectorProvider;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -16,6 +18,11 @@ import java.io.InputStreamReader;
 public class Server {
 
     public static void main(String[] args) throws IOException {
+        IOContext.setUp()
+                .ioProvider(new IOSelectorProvider())
+                .start();
+
+
         TCPServer tcpServer = new TCPServer(TCPConstants.PORT_SERVER);
         boolean isSucceed = tcpServer.start();
         if (!isSucceed) {
@@ -43,6 +50,9 @@ public class Server {
 
         UDPProvider.stop();
         tcpServer.stop();
+
+
+        IOContext.close();
     }
 
 }

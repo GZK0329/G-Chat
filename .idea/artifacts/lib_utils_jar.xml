@@ -2,7 +2,7 @@
   <artifact type="jar" name="lib-utils:jar">
     <output-path>$PROJECT_DIR$/out/artifacts/lib_utils_jar</output-path>
     <root id="archive" name="lib-utils.jar">
-      <element id="module-output" name="lib-utils" />
+      <element id="module-output" name="lib-clink" />
     </root>
   </artifact>
 </component>
