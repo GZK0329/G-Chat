@@ -15,6 +15,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  **/
 
 public class SocketChannelAdapter implements Receiver, Sender, Closeable {
+
     //标识是否已经关闭 channel
     private final AtomicBoolean isClosed = new AtomicBoolean(false);
 
@@ -69,7 +70,7 @@ public class SocketChannelAdapter implements Receiver, Sender, Closeable {
                 if(listener != null && args.read(channel) > 0){
                     listener.onCompleted(args);//读完了 回调函数 通知一下
                 }else{
-                    throw new Exception("can not read data!");
+                    throw new IOException("can not read data!");
                 }
             } catch (Exception e) {
                 e.printStackTrace();

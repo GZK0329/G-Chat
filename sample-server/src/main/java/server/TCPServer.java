@@ -133,7 +133,7 @@ public class TCPServer implements ClientHandler.ClientHandlerCallBack {
                             //配置为非阻塞
                             clientChannel.configureBlocking(false);
                             ClientHandler clientHandler = new ClientHandler(clientChannel, TCPServer.this);
-                            clientHandler.readToPrint();
+                            //clientHandler.readToPrint();
                             synchronized (TCPServer.this) {
                                 clientHandlerList.add(clientHandler);
                             }

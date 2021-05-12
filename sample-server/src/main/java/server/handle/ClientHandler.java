@@ -1,5 +1,6 @@
 package server.handle;
 
+import connect.Connector;
 import utils.CloseUtils;
 
 import java.io.*;
@@ -25,11 +26,13 @@ public class ClientHandler {
     private SocketChannel socketChannel;
 
     private boolean flag = true;
-    private final ClientReaderHandler readerHandler;
+    //private final ClientReaderHandler readerHandler;
     private final ClientWriteHandler writeHandler;
     private final ClientHandlerCallBack clientHandlerCallBack;
     private final String clientInfo;
     private ByteBuffer byteBuffer;
+    private Connector connector;
+
 
     public String getClientInfo() {
         return clientInfo;
@@ -39,16 +42,31 @@ public class ClientHandler {
 
         this.socketChannel = socketChannel;
 
-        Selector readerSelector = Selector.open();
-        socketChannel.register(readerSelector, SelectionKey.OP_READ);
+        connector = new Connector(){
+            @Override
+            public void onChannelClosed(SocketChannel channel) {
+                super.onChannelClosed(channel);
+                exitBySelf();
+            }
+
+            @Override
+            protected void onReceiveNewMessage(String str) {
+                super.onReceiveNewMessage(str);
+                clientHandlerCallBack.onNewMessageArrived(ClientHandler.this, str);
+            }
+        };
+        connector.setUp(socketChannel);
+
+        /*Selector readerSelector = Selector.open();
+        socketChannel.register(readerSelector, SelectionKey.OP_READ);*/
 
         Selector writeSelector = Selector.open();
         socketChannel.register(writeSelector, SelectionKey.OP_WRITE);
 
-        this.readerHandler = new ClientReaderHandler(readerSelector);
+        //this.readerHandler = new ClientReaderHandler(readerSelector);
         this.writeHandler = new ClientWriteHandler(writeSelector);
         this.clientHandlerCallBack = clientHandlerCallBack;
-        this.clientInfo = socketChannel.getLocalAddress().toString();
+        this.clientInfo = socketChannel.getRemoteAddress().toString();
         this.byteBuffer = ByteBuffer.allocate(256);
     }
 
@@ -57,13 +75,13 @@ public class ClientHandler {
         writeHandler.send(str);
     }
 
-    public void readToPrint() {
+    /*public void readToPrint() {
         //启动读线程
         readerHandler.start();
-    }
+    }*/
 
-    public void exit()  {
-        readerHandler.exit();
+    public void exit() {
+        //readerHandler.exit();
         writeHandler.exit();
         CloseUtils.close(socketChannel);
 
@@ -86,7 +104,7 @@ public class ClientHandler {
     }
 
 
-    private class ClientReaderHandler extends Thread {
+    /*private class ClientReaderHandler extends Thread {
         private boolean done = false;//结束标志
 
         private Selector readSelector;
@@ -145,7 +163,7 @@ public class ClientHandler {
             CloseUtils.close(readSelector);
         }
 
-    }
+    }*/
 
     private class ClientWriteHandler {
         private boolean done = false;

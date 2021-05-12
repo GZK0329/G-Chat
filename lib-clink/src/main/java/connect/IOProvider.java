@@ -14,7 +14,6 @@ public interface IOProvider extends Closeable {
 
     void unRegisterOutPut(SocketChannel channel);
 
-
     abstract class HandleInPutCallBack implements Runnable{
         @Override
         public void run() {
@@ -24,7 +23,6 @@ public interface IOProvider extends Closeable {
     }
 
     abstract class HandleOutPutCallBack implements Runnable{
-
         //输出
         private Object attach;
 

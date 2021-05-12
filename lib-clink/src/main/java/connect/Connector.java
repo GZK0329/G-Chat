@@ -24,13 +24,25 @@ public class Connector implements SocketChannelAdapter.OnChannelStatusListener, 
     //接收者
     private Receiver receiver;
 
-    void setUp(SocketChannel socketChannel) throws IOException {
+    public void setUp(SocketChannel socketChannel) throws IOException {
         this.channel = socketChannel;
         IOContext ioContext = IOContext.getINSTANCE();
         SocketChannelAdapter socketChannelAdapter =
                 new SocketChannelAdapter(channel, ioContext.getIoProvider(), this);
         sender = socketChannelAdapter;
         receiver = socketChannelAdapter;
+
+        readNextMessage();
+    }
+
+    private void readNextMessage() {
+        if (receiver != null) {
+            try {
+                receiver.receiveAsync(echoReceiveListener);
+            } catch (Exception e) {
+                System.out.println("接收数据异常" + e.getMessage());
+            }
+        }
     }
 
     @Override
@@ -42,4 +54,24 @@ public class Connector implements SocketChannelAdapter.OnChannelStatusListener, 
     public void onChannelClosed(SocketChannel channel) {
         System.out.println("管道关闭了");
     }
+
+    private IOArgs.IOArgsEventListener echoReceiveListener = new IOArgs.IOArgsEventListener() {
+        @Override
+        public void onStarted(IOArgs args) {
+
+        }
+
+        @Override
+        public void onCompleted(IOArgs args) {
+            //打印
+            onReceiveNewMessage(args.bufferToString());
+            //读下一条数据
+            readNextMessage();
+        }
+    };
+
+    protected void onReceiveNewMessage(String str) {
+        System.out.println(uuid.toString() + ":" + str);
+    }
+
 }

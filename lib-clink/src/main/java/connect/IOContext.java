@@ -1,5 +1,9 @@
 package connect;
 
+import utils.CloseUtils;
+
+import java.io.IOException;
+
 /**
  * @Description: 配置并且提供IOProvider
  * @Date: 2021/4/25
@@ -40,8 +44,14 @@ public class IOContext {
             return INSTANCE;
         }
     }
-    public static void close(){
+    public static void close() throws IOException {
+        if(INSTANCE!= null){
+            INSTANCE.callClose();
+        }
 
+    }
+    private  void callClose() throws IOException {
+        ioProvider.close();
     }
 
 }
