@@ -41,14 +41,14 @@ public class TCPClient {
     public static TCPClient startWith(ServerInfo info) throws Exception {
         Socket socket = new Socket();
         socket.setSoTimeout(3000);
-        System.out.println(Inet4Address.getByName(info.getAddress()));
-        System.out.println(info.getPort());
+        /*System.out.println(Inet4Address.getByName(info.getAddress()));
+        System.out.println(info.getPort());*/
         //连接套接字
         socket.connect(new InetSocketAddress(Inet4Address.getByName(info.getAddress()), info.getPort()), 3000);
 
         System.out.println("已经进入TCP连接");
-        System.out.println("客户端信息:" + socket.getLocalAddress() + socket.getLocalPort());
-        System.out.println("服务端信息:" + socket.getInetAddress() + socket.getPort());
+        System.out.println("客户端信息:" + socket.getLocalAddress() + "," +socket.getLocalPort());
+        System.out.println("服务端信息:" + socket.getInetAddress() + "," +socket.getPort());
 
         try {
             //改为读写操作
@@ -84,10 +84,10 @@ public class TCPClient {
         @Override
         public void run() {
             super.run();
-            BufferedReader socketInput = new BufferedReader(new InputStreamReader(inputStream));
+            BufferedReader socketInput = new BufferedReader(new InputStreamReader(this.inputStream));
         try{
             do{
-                String strReader = null;
+                String strReader;
                 try {
                     strReader = socketInput.readLine();
                 } catch (IOException e) {
@@ -109,7 +109,7 @@ public class TCPClient {
         }
 
         void exit() {
-            done = false;
+            done = true;
             CloseUtils.close(inputStream);
         }
     }

@@ -18,7 +18,7 @@ public class Client {
     //public static boolean done = true;
     public static void main(String[] args) {
         ServerInfo info = ClientSearcher.searchServer(10000);
-        System.out.println("Server:" + info);
+        System.out.println("ServerInfo:" + info);
         if(info != null){
             TCPClient tcpClient = null;
             try {
