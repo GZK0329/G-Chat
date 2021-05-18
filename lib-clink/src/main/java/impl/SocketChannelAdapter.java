@@ -23,6 +23,8 @@ public class SocketChannelAdapter implements Receiver, Sender, Closeable {
     private final IOProvider ioProvider;
     private final OnChannelStatusListener listener;
 
+    private IOArgs receiveArgsTemp;
+
     private IOArgs.IOArgsEventListener receiveListener;
     private IOArgs.IOArgsEventListener sendListener;
 
@@ -37,18 +39,24 @@ public class SocketChannelAdapter implements Receiver, Sender, Closeable {
     }
 
     @Override
-    public boolean receiveAsync(IOArgs.IOArgsEventListener listener) {
-        if (isClosed.get()) {
-            System.out.println("current channel is closed!");
-        }
-        receiveListener = listener;
-
-        return ioProvider.registerInPut(channel, inPutCallBack);
+    public void setReceiveListener(IOArgs.IOArgsEventListener ioArgsEventListener) {
+        receiveListener = ioArgsEventListener;
     }
 
     @Override
+    public boolean receiveAsync(IOArgs args) {
+        if (isClosed.get()) {
+            System.out.println("current channel is closed!");
+        }
+
+        receiveArgsTemp = args;
+        return ioProvider.registerInPut(channel, inPutCallBack);
+    }
+
+
+    @Override
     public boolean sendAsync(IOArgs ioArgs, IOArgs.IOArgsEventListener listener) {
-        if(isClosed.get()){
+        if (isClosed.get()) {
             System.out.println("current channel is closed!");
         }
 
@@ -61,15 +69,17 @@ public class SocketChannelAdapter implements Receiver, Sender, Closeable {
     private final IOProvider.HandleInPutCallBack inPutCallBack = new IOProvider.HandleInPutCallBack() {
         @Override
         protected void canProviderInPut() {
-            if(isClosed.get()){
+            if (isClosed.get()) {
                 return;
             }
-            IOArgs args = new IOArgs();
+            IOArgs args = receiveArgsTemp;
             IOArgs.IOArgsEventListener listener = SocketChannelAdapter.this.receiveListener;
+
+            listener.onStarted(args);
             try {
-                if(listener != null && args.read(channel) > 0){
+                if (args.readFrom(channel) > 0) {
                     listener.onCompleted(args);//读完了 回调函数 通知一下
-                }else{
+                } else {
                     throw new IOException("can not read data!");
                 }
             } catch (Exception e) {
@@ -82,21 +92,33 @@ public class SocketChannelAdapter implements Receiver, Sender, Closeable {
     private final IOProvider.HandleOutPutCallBack outPutCallBack = new IOProvider.HandleOutPutCallBack() {
 
         @Override
-        protected void canProviderOutPut(Object attach){
-            if(isClosed.get()){
+        protected void canProviderOutPut(Object attach) {
+            if (isClosed.get()) {
                 return;
             }
-            //TODO
-            sendListener.onCompleted(null);
+            IOArgs args = getAttach();
+            IOArgs.IOArgsEventListener listener = sendListener;
+            listener.onStarted(args);
+
+            try {
+                if (args.writeTo(channel) > 0) {
+                    listener.onCompleted(args);//读完了 回调函数 通知一下
+                } else {
+                    throw new IOException("can't write any data!");
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                CloseUtils.close(SocketChannelAdapter.this);
+            }
+
         }
 
     };
 
 
-
     @Override
-    public void close() throws IOException {
-        if(isClosed.compareAndSet(false, true)){
+    public void close() {
+        if (isClosed.compareAndSet(false, true)) {
             //解除注册 回调
             ioProvider.unRegisterInPut(channel);
             ioProvider.unRegisterOutPut(channel);

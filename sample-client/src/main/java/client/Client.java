@@ -1,7 +1,9 @@
 package client;
 
 
+import connect.IOContext;
 import constants.ServerInfo;
+import impl.IOSelectorProvider;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -16,41 +18,50 @@ import java.io.InputStreamReader;
 
 public class Client {
     //public static boolean done = true;
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
+
+        IOContext.setUp()
+                .ioProvider(new IOSelectorProvider())
+                .start();
+
         ServerInfo info = ClientSearcher.searchServer(10000);
         System.out.println("ServerInfo:" + info);
-        if(info != null){
+        if (info != null) {
             TCPClient tcpClient = null;
             try {
                 tcpClient = TCPClient.startWith(info);
-                if(tcpClient == null) return;
+                if (tcpClient == null) return;
+
                 //往服务器发
                 write(tcpClient);
+
             } catch (Exception e) {
                 e.printStackTrace();
-            }finally {
-                if(tcpClient != null){
-                    tcpClient = null;
+            } finally {
+                if (tcpClient != null) {
+                    tcpClient.exit();
                 }
             }
         }
     }
 
-    public static void write(TCPClient tcpClient){
-        if(tcpClient == null){
+    public static void write(TCPClient tcpClient) {
+        if (tcpClient == null) {
             return;
         }
         InputStream in = System.in;//字节流
         BufferedReader input = new BufferedReader(new InputStreamReader(in));
         try {
-            do{
+            do {
                 String str = input.readLine();
                 tcpClient.send(str);
-
-                if("00bye00".equalsIgnoreCase(str)){
+                tcpClient.send(str);
+                tcpClient.send(str);
+                tcpClient.send(str);
+                if ("00bye00".equalsIgnoreCase(str)) {
                     break;
                 }
-            }while(true);
+            } while (true);
         } catch (IOException e) {
             e.printStackTrace();
         }

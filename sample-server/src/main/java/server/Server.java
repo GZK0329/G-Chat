@@ -21,6 +21,7 @@ public class Server {
         IOContext.setUp()
                 .ioProvider(new IOSelectorProvider())
                 .start();
+        //返回IOContext 且IOContext中包含以一个IOProvider是IOSelectorProvider
 
 
         TCPServer tcpServer = new TCPServer(TCPConstants.PORT_SERVER);

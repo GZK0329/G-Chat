@@ -1,6 +1,8 @@
 package client;
 
+import connect.IOContext;
 import constants.ServerInfo;
+import impl.IOSelectorProvider;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -17,6 +19,10 @@ public class ClientTest {
     public static boolean done = false;
 
     public static void main(String[] args) throws IOException {
+        IOContext.setUp()
+                .ioProvider(new IOSelectorProvider())
+                .start();
+
         ServerInfo serverInfo = ClientSearcher.searchServer(10000);
         System.out.println("serverInfo:" + serverInfo);
         if (serverInfo == null) return;
@@ -31,6 +37,7 @@ public class ClientTest {
                 }
                 tcpClientList.add(tcpClient);
                 System.out.println("连接第" + (size++) + "个客户端");
+
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -60,9 +67,10 @@ public class ClientTest {
         Thread thread = new Thread(runnable);
         thread.start();
 
-        System.in.read();
-        done = true;
 
+        System.in.read();
+
+        done = true;
         try {
             thread.join();
         } catch (InterruptedException e) {

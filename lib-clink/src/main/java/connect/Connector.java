@@ -1,6 +1,10 @@
 package connect;
 
+import box.StringReceivePacket;
+import box.StringSendPacket;
 import impl.SocketChannelAdapter;
+import impl.async.AsyncReceiveDispatcher;
+import impl.async.AsyncSendDispatcher;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -23,31 +27,55 @@ public class Connector implements SocketChannelAdapter.OnChannelStatusListener, 
     private Sender sender;
     //接收者
     private Receiver receiver;
+    //调度者
+    private SendDispatcher sendDispatcher;
+    private ReceiveDispatcher receiveDispatcher;
+
+    private ReceiveDispatcher.receivePacketCallBack receiveCallBack = new ReceiveDispatcher.receivePacketCallBack() {
+        @Override
+        public void onReceivePacketCompleted(ReceivePacket packet) {
+            if(packet instanceof StringReceivePacket){
+                String msg = ((StringReceivePacket) packet).string();
+                onReceiveNewMessage(msg);
+            }
+        }
+    };
 
     public void setUp(SocketChannel socketChannel) throws IOException {
         this.channel = socketChannel;
         IOContext ioContext = IOContext.getINSTANCE();
+
         SocketChannelAdapter socketChannelAdapter =
                 new SocketChannelAdapter(channel, ioContext.getIoProvider(), this);
+
         sender = socketChannelAdapter;
         receiver = socketChannelAdapter;
 
-        readNextMessage();
+
+        sendDispatcher = new AsyncSendDispatcher(sender);
+        receiveDispatcher = new AsyncReceiveDispatcher(receiver, receiveCallBack);
+
+        //启动接收
+        receiveDispatcher.start();
+
+
+        //readNextMessage();
     }
 
-    private void readNextMessage() {
-        if (receiver != null) {
-            try {
-                receiver.receiveAsync(echoReceiveListener);
-            } catch (Exception e) {
-                System.out.println("接收数据异常" + e.getMessage());
-            }
-        }
+    public void send(String msg){
+        SendPacket packet = new StringSendPacket(msg);
+        sendDispatcher.send(packet);
     }
 
     @Override
     public void close() throws IOException {
+        receiveDispatcher.close();
+        sendDispatcher.close();
 
+        sender.close();
+        receiver.close();
+
+        channel.close();
     }
 
     @Override
@@ -55,23 +83,12 @@ public class Connector implements SocketChannelAdapter.OnChannelStatusListener, 
         System.out.println("管道关闭了");
     }
 
-    private IOArgs.IOArgsEventListener echoReceiveListener = new IOArgs.IOArgsEventListener() {
-        @Override
-        public void onStarted(IOArgs args) {
 
-        }
-
-        @Override
-        public void onCompleted(IOArgs args) {
-            //打印
-            onReceiveNewMessage(args.bufferToString());
-            //读下一条数据
-            readNextMessage();
-        }
-    };
 
     protected void onReceiveNewMessage(String str) {
         System.out.println(uuid.toString() + ":" + str);
     }
+
+
 
 }

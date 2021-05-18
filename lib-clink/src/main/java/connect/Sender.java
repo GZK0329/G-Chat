@@ -5,4 +5,6 @@ public interface Sender {
 
     //异步发送
     boolean sendAsync(IOArgs ioArgs, IOArgs.IOArgsEventListener listener);
+
+    void close();
 }
