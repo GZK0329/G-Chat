@@ -14,13 +14,16 @@
 </div>
 
 非阻塞IO，通过一个线程维护大量客户端的注册
-
 <div align="center">
 <img src=https://raw.githubusercontent.com/GZK0329/picture_store/master/NIO%E4%BC%98%E5%8C%96%E5%90%8E.png />
 </div>
 
 ### 1.3 消息粘包消息半包的解决
+TCP是可靠的，保证数据的完整性，本身不存在粘包。这里的消息粘包是指数据处理而不是传输时候的粘包。
 
+<div align="center">
+<img src=https://raw.githubusercontent.com/GZK0329/picture_store/master/%E6%95%B0%E6%8D%AE%E6%8E%A5%E6%94%B6.png />
+</div>
 
 ### 1.4 文件传输的实现实现流传输 消息分片支持文件快传
 
