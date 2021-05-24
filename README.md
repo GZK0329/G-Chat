@@ -1,10 +1,10 @@
 # G-Chat
 
-[构建思路](#jump1)
+[1.构建思路](#jump1)
 
-[测试分析](#jump2)
+[2.测试分析](#jump2)
 
-[使用方式](#jump3)
+[3.使用方式](#jump3)
 
 
 <span id="jump1"></span>
