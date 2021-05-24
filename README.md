@@ -1,11 +1,13 @@
 # G-Chat
 
 [构建思路](#jump1)
+
 [测试分析](#jump2)
+
 [使用方式](#jump3)
 
 
-<span id="jump1">跳转到的地方</span>
+<span id="jump1"></span>
 
 ## 1.构建思路
 ### 1.1 UDP广播搜索再建立TCP连接
@@ -53,8 +55,8 @@ byte[]可支持传输的文件大小有限，改为stream传输以支持大文�
 
 ### 1.5 心跳包维持连接
 
-<span id="jump2">跳转到的地方</span>
+<span id="jump2"></span>
 ## 2.测试分析
 
-<span id="jump3">跳转到的地方</span>
+<span id="jump3"></span>
 ## 3.使用方式
