@@ -20,7 +20,7 @@
 
 ### 1.3 消息粘包消息不完整的解决
 #### 消息粘包
-TCP是可靠的，保证数据的完，本身不存在粘包。这里的消息粘包是指数据处理而不是传输时候的粘包。
+TCP是可靠的，保证数据的完整性，本身不存在粘包。这里的消息粘包是指数据处理而不是传输时候的粘包。
 
 <div align="center">
 <img src=https://raw.githubusercontent.com/GZK0329/picture_store/master/%E6%95%B0%E6%8D%AE%E6%8E%A5%E6%94%B6.png />
