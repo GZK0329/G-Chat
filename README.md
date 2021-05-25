@@ -8,7 +8,7 @@
 
 
 ## 项目结构
-
+```
 ├─lib-clink
 │  ├─src
 │  │  ├─main
@@ -73,7 +73,7 @@
         │      └─handle
         └─generated-sources
             └─annotations
-            
+```          
 
 
 <span id="jump1"></span>
