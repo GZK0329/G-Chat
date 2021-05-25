@@ -4,12 +4,10 @@ import java.io.IOException;
 
 //接收者
 public interface Receiver {
-
-    //设置接收监听
-    void setReceiveListener(IOArgs.IOArgsEventListener ioArgsEventListener);
+    //设置processor
+    void setReceiveListener(IOArgs.IOArgsEventProcessor processor);
 
     //异步接收
-    boolean receiveAsync(IOArgs args);
+    boolean postReceiveAsync() throws Exception;
 
-    void close() throws IOException;
 }

@@ -23,10 +23,8 @@ public class SocketChannelAdapter implements Receiver, Sender, Closeable {
     private final IOProvider ioProvider;
     private final OnChannelStatusListener listener;
 
-    private IOArgs receiveArgsTemp;
-
-    private IOArgs.IOArgsEventListener receiveListener;
-    private IOArgs.IOArgsEventListener sendListener;
+    private IOArgs.IOArgsEventProcessor receiveProcessor;
+    private IOArgs.IOArgsEventProcessor sendProcessor;
 
     public SocketChannelAdapter(SocketChannel channel,
                                 IOProvider ioProvider,
@@ -39,31 +37,29 @@ public class SocketChannelAdapter implements Receiver, Sender, Closeable {
     }
 
     @Override
-    public void setReceiveListener(IOArgs.IOArgsEventListener ioArgsEventListener) {
-        receiveListener = ioArgsEventListener;
+    public void setReceiveListener(IOArgs.IOArgsEventProcessor processor) {
+        receiveProcessor = processor;
+    }
+    @Override
+    public void setSendListener(IOArgs.IOArgsEventProcessor processor) {
+        sendProcessor = processor;
     }
 
     @Override
-    public boolean receiveAsync(IOArgs args) {
+    public boolean postSendAsync() {
         if (isClosed.get()) {
             System.out.println("current channel is closed!");
         }
-
-        receiveArgsTemp = args;
-        return ioProvider.registerInPut(channel, inPutCallBack);
-    }
-
-
-    @Override
-    public boolean sendAsync(IOArgs ioArgs, IOArgs.IOArgsEventListener listener) {
-        if (isClosed.get()) {
-            System.out.println("current channel is closed!");
-        }
-
-        sendListener = listener;
-        outPutCallBack.setAttach(ioArgs);
+        //IOArgs args = sendProcessor.provideIOArgs();
         return ioProvider.registerOutPut(channel, outPutCallBack);
+    }
 
+    @Override
+    public boolean postReceiveAsync() {
+        if (isClosed.get()) {
+            System.out.println("current channel is closed!");
+        }
+        return ioProvider.registerInPut(channel, inPutCallBack);
     }
 
     private final IOProvider.HandleInPutCallBack inPutCallBack = new IOProvider.HandleInPutCallBack() {
@@ -72,15 +68,13 @@ public class SocketChannelAdapter implements Receiver, Sender, Closeable {
             if (isClosed.get()) {
                 return;
             }
-            IOArgs args = receiveArgsTemp;
-            IOArgs.IOArgsEventListener listener = SocketChannelAdapter.this.receiveListener;
-
-            listener.onStarted(args);
+            IOArgs.IOArgsEventProcessor processor = receiveProcessor;
+            IOArgs args = processor.provideIOArgs();
             try {
                 if (args.readFrom(channel) > 0) {
-                    listener.onCompleted(args);//读完了 回调函数 通知一下
+                    processor.onConsumeCompleted(args);//读完了 回调函数 通知一下
                 } else {
-                    throw new IOException("can not read data!");
+                    processor.onConsumeFailed(args,new Exception("没读到数据"));
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -92,19 +86,18 @@ public class SocketChannelAdapter implements Receiver, Sender, Closeable {
     private final IOProvider.HandleOutPutCallBack outPutCallBack = new IOProvider.HandleOutPutCallBack() {
 
         @Override
-        protected void canProviderOutPut(Object attach) {
+        protected void canProviderOutPut() {
             if (isClosed.get()) {
                 return;
             }
-            IOArgs args = getAttach();
-            IOArgs.IOArgsEventListener listener = sendListener;
-            listener.onStarted(args);
+            IOArgs.IOArgsEventProcessor processor = sendProcessor;
+            IOArgs args = processor.provideIOArgs();
 
             try {
                 if (args.writeTo(channel) > 0) {
-                    listener.onCompleted(args);//读完了 回调函数 通知一下
+                    processor.onConsumeCompleted(args);//读完了 回调函数 通知一下
                 } else {
-                    throw new IOException("can't write any data!");
+                    processor.onConsumeFailed(args, new IOException("读不到数据！"));
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -114,7 +107,6 @@ public class SocketChannelAdapter implements Receiver, Sender, Closeable {
         }
 
     };
-
 
     @Override
     public void close() {

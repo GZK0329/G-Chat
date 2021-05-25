@@ -31,7 +31,7 @@ public class Connector implements SocketChannelAdapter.OnChannelStatusListener, 
     private SendDispatcher sendDispatcher;
     private ReceiveDispatcher receiveDispatcher;
 
-    private ReceiveDispatcher.receivePacketCallBack receiveCallBack = new ReceiveDispatcher.receivePacketCallBack() {
+    private ReceiveDispatcher.ReceivePacketCallBack receiveCallBack = new ReceiveDispatcher.ReceivePacketCallBack() {
         @Override
         public void onReceivePacketCompleted(ReceivePacket packet) {
             if(packet instanceof StringReceivePacket){
@@ -57,14 +57,17 @@ public class Connector implements SocketChannelAdapter.OnChannelStatusListener, 
 
         //启动接收
         receiveDispatcher.start();
-
-
-        //readNextMessage();
     }
 
-    public void send(String msg){
+    public void send(String msg)  {
         SendPacket packet = new StringSendPacket(msg);
-        sendDispatcher.send(packet);
+        try {
+            sendDispatcher.send(packet);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+
     }
 
     @Override
@@ -72,23 +75,16 @@ public class Connector implements SocketChannelAdapter.OnChannelStatusListener, 
         receiveDispatcher.close();
         sendDispatcher.close();
 
-        sender.close();
-        receiver.close();
-
         channel.close();
     }
 
     @Override
     public void onChannelClosed(SocketChannel channel) {
-        System.out.println("管道关闭了");
+        System.out.println("pipe is closed!");
     }
-
-
 
     protected void onReceiveNewMessage(String str) {
         System.out.println(uuid.toString() + ":" + str);
     }
-
-
 
 }

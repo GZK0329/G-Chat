@@ -1,13 +1,13 @@
 package impl.async;
 
-import connect.IOArgs;
-import connect.SendDispatcher;
-import connect.SendPacket;
-import connect.Sender;
+import connect.*;
 import utils.CloseUtils;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -18,29 +18,67 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @Date: 2021/5/14
  **/
 
-public class AsyncSendDispatcher implements SendDispatcher, Closeable {
+public class AsyncSendDispatcher implements SendDispatcher, Closeable, IOArgs.IOArgsEventProcessor {
     private final Sender sender;
     private final Queue<SendPacket> queue = new ConcurrentLinkedDeque<>();
-    private final AtomicBoolean isSending = new AtomicBoolean(false);
+    private final AtomicBoolean isSending = new AtomicBoolean();
     private final AtomicBoolean isClosed = new AtomicBoolean(false);
 
-
+    private ReadableByteChannel packetChannel;
     private IOArgs ioArgs = new IOArgs();
-    private SendPacket sendPacket;
 
-    private int total;
-    private int position;
 
-    private SendPacket packetTemp;
+    private long total;
+    private long position;
+
+    private SendPacket<?> packetTemp;
 
 
     public AsyncSendDispatcher(Sender sender) {
         this.sender = sender;
+        sender.setSendListener(this);
+    }
+
+    @Override
+    public IOArgs provideIOArgs() {
+        IOArgs args = ioArgs;
+        if(packetChannel == null){
+            //首包
+            packetChannel = Channels.newChannel(packetTemp.open());
+            args.limit(4);
+            args.writeLength((int) packetTemp.length());
+        }else {
+            //非首包
+            args.limit((int) Math.min(args.capacity(), total - position));
+            try {
+                //从channel中读取数据到args
+                int count = args.readFrom(packetChannel);
+                position += count;
+            } catch (Exception e) {
+                e.printStackTrace();
+                return null;
+            }
+        }
+        return args;
+    }
+
+    @Override
+    public void onConsumeFailed(IOArgs ioArgs, Exception e) {
+            e.printStackTrace();
+    }
+
+    @Override
+    public void onConsumeCompleted(IOArgs ioArgs) {
+        try {
+            sendCurrentPacket();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
 
     @Override
-    public void send(SendPacket packet) {
+    public void send(SendPacket packet) throws Exception {
         queue.offer(packet);
         if (isSending.compareAndSet(false, true)) {
             sendNextPacket();
@@ -56,13 +94,13 @@ public class AsyncSendDispatcher implements SendDispatcher, Closeable {
         return packet;
     }
 
-    private void sendNextPacket() {
+    private void sendNextPacket() throws Exception {
+
         SendPacket temp = packetTemp;
-        if (temp != null) {
-            CloseUtils.close(temp);
-        }
+        CloseUtils.close(temp);
 
         SendPacket packet = packetTemp = takePacket();
+
         if (packet == null) {
             isSending.set(false);
             return;
@@ -72,43 +110,36 @@ public class AsyncSendDispatcher implements SendDispatcher, Closeable {
         sendCurrentPacket();
     }
 
-    private void sendCurrentPacket() {
-        IOArgs args = ioArgs;
-        args.startWriting();
-
+    private void sendCurrentPacket() throws Exception {
         if (position >= total) {
+            completePacket(total == position);
             sendNextPacket();
             return;
-        } else if (position == 0) {
-            //首包，需携带长度信息
-            args.writeLength(total);
         }
-        byte[] bytes = packetTemp.bytes();
-        int count = args.readFrom(bytes, position);
-        position += count;
+        try {
+            sender.postSendAsync();
+        } catch (IOException e) {
+            closeAndNotify();
+        }
+    }
 
-        args.finishWriting();
-        sender.sendAsync(args, IOArgsEventListener);
-
+    private void completePacket(boolean isSucceed) {
+        SendPacket packet = this.packetTemp;
+        if (packet == null) {
+            return;
+        }
+        CloseUtils.close(packet);
+        CloseUtils.close(packetChannel);
+        packetChannel = null;
+        packetTemp = null;
+        total = 0;
+        position = 0;
     }
 
 
     private void closeAndNotify() {
         CloseUtils.close(this);
     }
-
-    private IOArgs.IOArgsEventListener IOArgsEventListener = new IOArgs.IOArgsEventListener() {
-        @Override
-        public void onStarted(IOArgs args) {
-
-        }
-
-        @Override
-        public void onCompleted(IOArgs args) {
-            //继续发送当前包
-            sendCurrentPacket();
-        }
-    };
 
     @Override
     public void cancel(SendPacket packet) {
@@ -119,11 +150,10 @@ public class AsyncSendDispatcher implements SendDispatcher, Closeable {
     public void close() {
         if (isClosed.compareAndSet(false, true)) {
             isSending.set(false);
-            SendPacket packet = packetTemp;
-            if (packetTemp != null) {
-                packetTemp = null;
-                CloseUtils.close(packet);
-            }
+            //异常导致完成
+            completePacket(false);
         }
     }
+
+
 }

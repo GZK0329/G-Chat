@@ -19,7 +19,7 @@ public interface ReceiveDispatcher {
 
     void close();
     /*接收到数据之后 通知回调*/
-    interface receivePacketCallBack{
+    interface ReceivePacketCallBack{
         void onReceivePacketCompleted(ReceivePacket packet);
     }
 

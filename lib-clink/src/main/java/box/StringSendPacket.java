@@ -2,6 +2,7 @@ package box;
 
 import connect.SendPacket;
 
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 
 /**
@@ -10,15 +11,16 @@ import java.nio.charset.StandardCharsets;
  * @Date: 2021/5/14
  **/
 
-public class StringSendPacket extends SendPacket {
+public class StringSendPacket extends SendPacket<ByteArrayInputStream> {
     private byte[] buffer;
+
     public StringSendPacket(String msg) {
         this.buffer = msg.getBytes(StandardCharsets.UTF_8);
         this.length = buffer.length;
     }
 
     @Override
-    public byte[] bytes() {
-        return buffer;
+    protected ByteArrayInputStream createStream() {
+        return new ByteArrayInputStream(buffer);
     }
 }

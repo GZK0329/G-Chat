@@ -23,23 +23,10 @@ public interface IOProvider extends Closeable {
     }
 
     abstract class HandleOutPutCallBack implements Runnable{
-        //输出
-        private Object attach;
-
-        public void setAttach(Object attach) {
-            this.attach = attach;
-        }
-
-        public final <T> T getAttach(){
-            @SuppressWarnings({"UnnecessaryLocalVariable", "unchecked"})
-            T attach = (T) this.attach;
-            return attach;
-        }
-
         @Override
         public void run() {
-            canProviderOutPut(attach);
+            canProviderOutPut();
         }
-        protected abstract void canProviderOutPut(Object attach);
+        protected abstract void canProviderOutPut();
     }
 }

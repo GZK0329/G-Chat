@@ -1,9 +1,16 @@
 package connect;
 
+import com.sun.corba.se.spi.ior.Writeable;
+
 import java.io.EOFException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.SocketChannel;
+import java.nio.channels.WritableByteChannel;
+import java.util.DuplicateFormatFlagsException;
 
 /**
  * @Description: 输入输出的数据的封装
@@ -12,25 +19,41 @@ import java.nio.channels.SocketChannel;
  **/
 
 public class IOArgs {
-    ByteBuffer buffer = ByteBuffer.allocate(256);
-    private int limit = 256;
+    private int limit = 5;
+    ByteBuffer buffer = ByteBuffer.allocate(5);
 
     /*
     * 从buffer中读取数据
     * */
-    public int readFrom(byte[] bytes, int offset){
-        int size = Math.min(bytes.length - offset, buffer.remaining());
-        buffer.put(bytes, offset, size);
-        return size;
+    public int readFrom(ReadableByteChannel channel) throws Exception {
+        startWriting();
+        int byteProduced = 0;
+        while(buffer.hasRemaining()){
+            int len = channel.read(buffer);
+            if(len < 0){
+                throw new EOFException();
+            }
+            byteProduced += len;
+        }
+        finishWriting();
+        return byteProduced;
     }
 
     /*
      * 向buffer中写入数据
      * */
-    public int writeTo(byte[] bytes, int offset){
-        int size = Math.min(bytes.length - offset, buffer.remaining());
-        buffer.get(bytes, offset, size);
-        return size;
+    public int writeTo(WritableByteChannel channel) throws Exception {
+
+        int byteProduced = 0;
+        while(buffer.hasRemaining()){
+            int len = channel.write(buffer);
+            if(len < 0){
+                throw new EOFException();
+            }
+            byteProduced += len;
+        }
+
+        return byteProduced;
     }
 
     /*
@@ -93,7 +116,9 @@ public class IOArgs {
     }
 
     public void writeLength(int total) {
+        startWriting();
         buffer.putInt(total);
+        finishWriting();
     }
     public int readLength() {
         return buffer.getInt();
@@ -103,14 +128,25 @@ public class IOArgs {
         return buffer.capacity();
     }
 
-    //IO参数 事件监听
-    public interface IOArgsEventListener {
+    /*
+    * IOArgs提供者 处理者;数据的生产者 消费者
+    * */
+    public interface IOArgsEventProcessor {
+        /*
+        * 提供一份IOArgs
+        * */
+        IOArgs provideIOArgs();
 
-        //是否开始
-        void onStarted(IOArgs args);
+        /*
+        * 消费失败的通知并抛出异常
+        * */
+        void onConsumeFailed(IOArgs ioArgs, Exception e);
 
-        //是否完成
-        void onCompleted(IOArgs args);
+        /*
+        * 消费完成的通知
+        * */
+        void onConsumeCompleted(IOArgs ioArgs) ;
+
     }
 
 }

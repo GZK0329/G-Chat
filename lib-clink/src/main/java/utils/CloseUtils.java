@@ -17,6 +17,9 @@ public class CloseUtils {
             return;
         }else{
             for (Closeable closeable : closeables) {
+                if(closeable == null){
+                    continue;
+                }
                 try {
                     closeable.close();
                 } catch (IOException e) {

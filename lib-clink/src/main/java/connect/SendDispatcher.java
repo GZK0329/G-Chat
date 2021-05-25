@@ -11,7 +11,7 @@ public interface SendDispatcher {
     /*
     * 发送
     * */
-    void send(SendPacket packet);
+    void send(SendPacket packet) throws Exception;
 
     /*
     * 取消发送

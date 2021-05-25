@@ -2,6 +2,7 @@ package connect;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.util.stream.Stream;
 
 /**
  * @Description: 数据包的定义
@@ -9,20 +10,35 @@ import java.io.IOException;
  * @Date: 2021/5/14
  **/
 
-public class Packet implements Closeable {
+public abstract class Packet <T extends Closeable>  implements Closeable {
     protected byte type;
-    protected int length;
+    protected long length;
+    private T stream;
+    protected abstract T createStream();
+
+    protected void closeStream(T stream) throws IOException {
+            stream.close();
+    }
+
+    public final T open() {
+        if (stream == null) {
+            stream = createStream();
+        }
+        return stream;
+    }
+
+    public final void close() throws IOException {
+        if (stream != null) {
+            closeStream(stream);
+            stream = null;
+        }
+    }
 
     public byte type() {
         return type;
     }
 
-    public int length() {
+    public long length() {
         return length;
-    }
-
-    @Override
-    public void close() throws IOException {
-
     }
 }
