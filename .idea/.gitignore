@@ -6,6 +6,5 @@
 /dataSources.local.xml
 # Editor-based HTTP Client requests
 /httpRequests/
-# markdown文件不传输
-*.md
+
 
