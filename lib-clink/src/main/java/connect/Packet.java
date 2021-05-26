@@ -10,32 +10,42 @@ import java.util.stream.Stream;
  * @Date: 2021/5/14
  **/
 
-public abstract class Packet <T extends Closeable>  implements Closeable {
-    protected byte type;
-    protected long length;
-    private T stream;
-    protected abstract T createStream();
+public abstract class Packet <Stream extends Closeable>  implements Closeable {
+    //Bytes 类型 1
+    public static final byte TYPE_MEMORY_BYTES = 1;
+    //String 类型 2
+    public static final byte TYPE_MEMORY_STRING = 2;
+    //File 类型 3
+    public static final byte TYPE_STREAM_FILE = 3;
+    //长链接流 类型 4
+    public static final byte TYPE_STREAM_DIRECT = 4;
 
-    protected void closeStream(T stream) throws IOException {
+    protected long length;
+    private Stream stream;
+
+    /*
+    * 创建流
+    * */
+    protected abstract Stream createStream();
+
+    protected void closeStream(Stream stream) throws IOException {
             stream.close();
     }
 
-    public final T open() {
+    public final Stream open() {
         if (stream == null) {
             stream = createStream();
         }
         return stream;
     }
 
+    public abstract byte type();
+
     public final void close() throws IOException {
         if (stream != null) {
             closeStream(stream);
             stream = null;
         }
-    }
-
-    public byte type() {
-        return type;
     }
 
     public long length() {

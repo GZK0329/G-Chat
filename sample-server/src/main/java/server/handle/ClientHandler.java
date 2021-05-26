@@ -1,6 +1,9 @@
 package server.handle;
 
 import connect.Connector;
+import connect.Packet;
+import connect.ReceivePacket;
+import constants.Foo;
 import utils.CloseUtils;
 
 import java.io.*;
@@ -25,14 +28,16 @@ public class ClientHandler extends Connector {
 
     private final ClientHandlerCallBack clientHandlerCallBack;
     private final String clientInfo;
+    private File cachePath;
 
     public String getClientInfo() {
         return clientInfo;
     }
 
-    public ClientHandler(SocketChannel socketChannel, ClientHandlerCallBack clientHandlerCallBack) throws IOException {
+    public ClientHandler(SocketChannel socketChannel, ClientHandlerCallBack clientHandlerCallBack, File cachePath) throws IOException {
         this.clientHandlerCallBack = clientHandlerCallBack;
         this.clientInfo = socketChannel.getRemoteAddress().toString();
+        this.cachePath = cachePath;
         System.out.println("新客户端连接:" + clientInfo);
 
         setUp(socketChannel);
@@ -49,9 +54,18 @@ public class ClientHandler extends Connector {
     }
 
     @Override
-    protected void onReceiveNewMessage(String str) {
-        super.onReceiveNewMessage(str);
-        clientHandlerCallBack.onNewMessageArrived(this, str);
+    protected void onReceivePacket(ReceivePacket packet) {
+        super.onReceivePacket(packet);
+        if(packet.type() == Packet.TYPE_MEMORY_STRING){
+            String str = (String) packet.entity();
+            System.out.println(uuid.toString() + ":" + str);
+            clientHandlerCallBack.onNewMessageArrived(this, str);//转发
+        }
+    }
+
+    @Override
+    protected File createNewReceiveFile() {
+        return Foo.createRandomTemp(cachePath);
     }
 
     @Override

@@ -1,14 +1,14 @@
 package client;
 
 
+import box.FileReceivePacket;
+import box.FileSendPacket;
 import connect.IOContext;
+import constants.Foo;
 import constants.ServerInfo;
 import impl.IOSelectorProvider;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 
 /**
  * @Description: TODO
@@ -18,8 +18,8 @@ import java.io.InputStreamReader;
 
 public class Client {
     //public static boolean done = true;
-    public static void main(String[] args) throws IOException {
-
+    public static void main(String[] args) throws Exception {
+        File cachePath = Foo.getCacheDir("client");
         IOContext.setUp()
                 .ioProvider(new IOSelectorProvider())
                 .start();
@@ -29,7 +29,7 @@ public class Client {
         if (info != null) {
             TCPClient tcpClient = null;
             try {
-                tcpClient = TCPClient.startWith(info);
+                tcpClient = TCPClient.startWith(info, cachePath);
                 if (tcpClient == null) return;
 
                 //往服务器发
@@ -54,13 +54,25 @@ public class Client {
         try {
             do {
                 String str = input.readLine();
-                tcpClient.send(str);
-                tcpClient.send(str);
-                tcpClient.send(str);
-                tcpClient.send(str);
                 if ("00bye00".equalsIgnoreCase(str)) {
                     break;
                 }
+                /*
+                * 假设str以--f开头则代表这是个文件
+                * */
+                if(str.startsWith("--f")){
+                    String[] array = str.split(" ");
+                    if(array.length >= 2){
+                        String filePath = array[1];
+                        File file = new File(filePath);
+                        if(file.exists() && file.isFile()){
+                            FileSendPacket packet = new FileSendPacket(file);
+                            tcpClient.send(packet);
+                            continue;
+                        }
+                    }
+                }
+                tcpClient.send(str);
             } while (true);
         } catch (IOException e) {
             e.printStackTrace();

@@ -4,6 +4,7 @@ package server;
 import server.handle.ClientHandler;
 import utils.CloseUtils;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 
@@ -28,8 +29,10 @@ public class TCPServer implements ClientHandler.ClientHandlerCallBack {
     private final ExecutorService forwardingThreadPoolExecutor;
     private Selector selector;
     private ServerSocketChannel server;
+    private final File cachePath;
 
-    public TCPServer(int port) {
+    public TCPServer(int port, File cachePath) {
+        this.cachePath = cachePath;
         this.port = port;
         this.forwardingThreadPoolExecutor = Executors.newSingleThreadExecutor();
     }
@@ -132,7 +135,7 @@ public class TCPServer implements ClientHandler.ClientHandlerCallBack {
                             SocketChannel clientChannel = server.accept();
                             //配置为非阻塞
                             clientChannel.configureBlocking(false);
-                            ClientHandler clientHandler = new ClientHandler(clientChannel, TCPServer.this);
+                            ClientHandler clientHandler = new ClientHandler(clientChannel, TCPServer.this, cachePath);
                             //clientHandler.readToPrint();
                             synchronized (TCPServer.this) {
                                 clientHandlerList.add(clientHandler);

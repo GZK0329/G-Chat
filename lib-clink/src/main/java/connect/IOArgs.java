@@ -19,8 +19,8 @@ import java.util.DuplicateFormatFlagsException;
  **/
 
 public class IOArgs {
-    private int limit = 5;
-    ByteBuffer buffer = ByteBuffer.allocate(5);
+    private int limit = 256;
+    ByteBuffer buffer = ByteBuffer.allocate(256);
 
     /*
     * 从buffer中读取数据

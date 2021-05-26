@@ -21,6 +21,8 @@ public interface ReceiveDispatcher {
     /*接收到数据之后 通知回调*/
     interface ReceivePacketCallBack{
         void onReceivePacketCompleted(ReceivePacket packet);
+
+        ReceivePacket<?,?> onArrivedNewPacket(byte type, int length);
     }
 
 }

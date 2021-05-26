@@ -1,5 +1,7 @@
 package connect;
 
+import box.BytesReceivePacket;
+import box.FileReceivePacket;
 import box.StringReceivePacket;
 import box.StringSendPacket;
 import impl.SocketChannelAdapter;
@@ -7,6 +9,7 @@ import impl.async.AsyncReceiveDispatcher;
 import impl.async.AsyncSendDispatcher;
 
 import java.io.Closeable;
+import java.io.File;
 import java.io.IOException;
 import java.nio.channels.SocketChannel;
 import java.util.UUID;
@@ -17,10 +20,10 @@ import java.util.UUID;
  * @Date: 2021/4/25
  **/
 
-public class Connector implements SocketChannelAdapter.OnChannelStatusListener, Closeable {
+public abstract class Connector implements SocketChannelAdapter.OnChannelStatusListener, Closeable {
 
     //标识连接 独一无二
-    private final static UUID uuid = UUID.randomUUID();
+    protected final static UUID uuid = UUID.randomUUID();
     //通道
     private SocketChannel channel;
     //发送者
@@ -34,12 +37,27 @@ public class Connector implements SocketChannelAdapter.OnChannelStatusListener, 
     private ReceiveDispatcher.ReceivePacketCallBack receiveCallBack = new ReceiveDispatcher.ReceivePacketCallBack() {
         @Override
         public void onReceivePacketCompleted(ReceivePacket packet) {
-            if(packet instanceof StringReceivePacket){
-                String msg = ((StringReceivePacket) packet).string();
-                onReceiveNewMessage(msg);
+            onReceivePacket(packet);
+        }
+
+        @Override
+        public ReceivePacket<?, ?> onArrivedNewPacket(byte type, int length) {
+            switch (type) {
+                case Packet.TYPE_MEMORY_BYTES:
+                    return new BytesReceivePacket(length);
+                case Packet.TYPE_MEMORY_STRING:
+                    return new StringReceivePacket(length);
+                case Packet.TYPE_STREAM_FILE:
+                    return new FileReceivePacket(length, createNewReceiveFile());
+                case Packet.TYPE_STREAM_DIRECT:
+                    return new BytesReceivePacket(length);
+                default:
+                    throw new UnsupportedOperationException("不支持的传输文件类型:" + type);
             }
         }
     };
+
+    protected abstract File createNewReceiveFile();
 
     public void setUp(SocketChannel socketChannel) throws IOException {
         this.channel = socketChannel;
@@ -59,15 +77,21 @@ public class Connector implements SocketChannelAdapter.OnChannelStatusListener, 
         receiveDispatcher.start();
     }
 
-    public void send(String msg)  {
+    public void send(String msg) {
         SendPacket packet = new StringSendPacket(msg);
         try {
             sendDispatcher.send(packet);
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
 
-
+    public void send(SendPacket packet) {
+        try {
+            sendDispatcher.send(packet);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -85,6 +109,10 @@ public class Connector implements SocketChannelAdapter.OnChannelStatusListener, 
 
     protected void onReceiveNewMessage(String str) {
         System.out.println(uuid.toString() + ":" + str);
+    }
+
+    protected void onReceivePacket(ReceivePacket packet) {
+        System.out.println(uuid.toString() + "[New-Packet]-Type:" + packet.type() + ",Length:" + packet.length);
     }
 
 }

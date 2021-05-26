@@ -11,16 +11,15 @@ import java.nio.charset.StandardCharsets;
  * @Date: 2021/5/14
  **/
 
-public class StringSendPacket extends SendPacket<ByteArrayInputStream> {
+public class StringSendPacket extends BytesSendPacket {
     private byte[] buffer;
 
     public StringSendPacket(String msg) {
-        this.buffer = msg.getBytes(StandardCharsets.UTF_8);
-        this.length = buffer.length;
+        super(msg.getBytes(StandardCharsets.UTF_8));
     }
 
     @Override
-    protected ByteArrayInputStream createStream() {
-        return new ByteArrayInputStream(buffer);
+    public byte type() {
+        return TYPE_MEMORY_STRING;
     }
 }
