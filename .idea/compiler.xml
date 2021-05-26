@@ -7,13 +7,14 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="sample-client" />
-        <module name="lib-clink" />
         <module name="sample-server" />
         <module name="sample-config" />
+        <module name="lib-utils" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
       <module name="chatRoom" target="8" />
+      <module name="sample-client (1)" target="8" />
       <module name="UDPSearch" target="8" />
       <module name="UDPSearch_TCP_channel" target="8" />
     </bytecodeTargetLevel>

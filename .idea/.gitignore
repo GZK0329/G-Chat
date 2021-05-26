@@ -7,4 +7,8 @@
 # Editor-based HTTP Client requests
 /httpRequests/
 
+# delete file send/receive
+/cache/
+
+/.idea/
 
