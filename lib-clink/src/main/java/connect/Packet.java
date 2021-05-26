@@ -51,4 +51,12 @@ public abstract class Packet <Stream extends Closeable>  implements Closeable {
     public long length() {
         return length;
     }
+
+    /*
+    *  头部的额外信息,用于携带额外的校验信息
+    * */
+    public byte[] headerInfo(){
+        return null;
+    }
 }
+

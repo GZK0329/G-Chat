@@ -8,8 +8,8 @@
         <outputRelativeToContentRoot value="true" />
         <module name="sample-client" />
         <module name="sample-server" />
-        <module name="lib-utils" />
         <module name="sample-config" />
+        <module name="lib-utils" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>

@@ -11,12 +11,22 @@ import java.io.InputStream;
 
 public abstract class SendPacket<T extends InputStream> extends Packet<T> {
 
-    //是否取消了
+    /*
+    * 是否发送了
+    * true  未发送完成
+    * false 已发送完成
+    * */
     private boolean isCanceled;
 
     public boolean isCanceled() {
         return isCanceled;
     }
 
+    /*
+    * 用于取消发送标志
+    * */
+    public void cancel(){
+        isCanceled = true;
+    }
 }
 

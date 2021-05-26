@@ -71,10 +71,12 @@ public class SocketChannelAdapter implements Receiver, Sender, Closeable {
             IOArgs.IOArgsEventProcessor processor = receiveProcessor;
             IOArgs args = processor.provideIOArgs();
             try {
-                if (args.readFrom(channel) > 0) {
+                if(args == null){
+                    processor.onConsumeFailed(args, new Exception("provide IOArgs is null"));
+                }else if (args.readFrom(channel) > 0) {
                     processor.onConsumeCompleted(args);//读完了 回调函数 通知一下
                 } else {
-                    processor.onConsumeFailed(args,new Exception("没读到数据"));
+                    processor.onConsumeFailed(args,new Exception("cannot read ant data!"));
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -94,10 +96,12 @@ public class SocketChannelAdapter implements Receiver, Sender, Closeable {
             IOArgs args = processor.provideIOArgs();
 
             try {
-                if (args.writeTo(channel) > 0) {
+                if (args == null) {
+                    processor.onConsumeFailed(args, new Exception("provided IOArgs is null"));
+                }else if(args.writeTo(channel) > 0) {
                     processor.onConsumeCompleted(args);//读完了 回调函数 通知一下
                 } else {
-                    processor.onConsumeFailed(args, new IOException("读不到数据！"));
+                    processor.onConsumeFailed(args, new IOException("can not write any data!"));
                 }
             } catch (Exception e) {
                 e.printStackTrace();
