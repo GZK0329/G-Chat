@@ -1,9 +1,11 @@
 package client;
 
 import connect.IOContext;
+import constants.Foo;
 import constants.ServerInfo;
 import impl.IOSelectorProvider;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -18,7 +20,9 @@ import java.util.List;
 public class ClientTest {
     public static boolean done = false;
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws Exception {
+        File cachePath = Foo.getCacheDir("client/test");
+
         IOContext.setUp()
                 .ioProvider(new IOSelectorProvider())
                 .start();
@@ -30,7 +34,7 @@ public class ClientTest {
         int size = 0;//统计成功连接数量
         for (int i = 0; i < 10; i++) {
             try {
-                TCPClient tcpClient = TCPClient.startWith(serverInfo);
+                TCPClient tcpClient = TCPClient.startWith(serverInfo, cachePath);
                 if (tcpClient == null) {
                     System.out.println("连接异常!");
                     continue;

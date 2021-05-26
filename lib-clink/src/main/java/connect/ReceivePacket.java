@@ -9,6 +9,31 @@ import java.io.OutputStream;
  * @Date: 2021/5/14
  **/
 
-public abstract class ReceivePacket<T extends OutputStream> extends Packet <T>{
+public abstract class ReceivePacket<Stream extends OutputStream, Entity> extends Packet <Stream>{
+    /*
+    * 定义接收包的最终实体
+    * */
+    private Entity entity;
 
+    public ReceivePacket(long len) {
+        this.length = len;
+    }
+
+    public Entity entity(){
+        return entity;
+    }
+
+    /*
+    * 根据流生成实体
+    * */
+    protected abstract Entity buildEntity(Stream stream);
+
+    /*
+    * 先关闭流然后将流的内容转换成实体
+    * */
+    @Override
+    protected void closeStream(Stream stream) throws IOException {
+        super.closeStream(stream);
+        entity = buildEntity(stream);
+    }
 }

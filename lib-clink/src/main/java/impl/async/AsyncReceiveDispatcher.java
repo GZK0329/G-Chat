@@ -1,5 +1,6 @@
 package impl.async;
 
+import box.FileReceivePacket;
 import box.StringReceivePacket;
 import connect.*;
 import utils.CloseUtils;
@@ -24,7 +25,7 @@ public class AsyncReceiveDispatcher implements ReceiveDispatcher, Closeable, IOA
     private ReceivePacketCallBack callback;
 
     private IOArgs ioArgs = new IOArgs();
-    private ReceivePacket<?> packetTemp;
+    private ReceivePacket<?, ?> packetTemp;
 
     private WritableByteChannel packetChannel;
     private long total;
@@ -76,7 +77,8 @@ public class AsyncReceiveDispatcher implements ReceiveDispatcher, Closeable, IOA
     private void assemblePacket(IOArgs args) {
         if (packetTemp == null) {
             int length = args.readLength();
-            packetTemp = new StringReceivePacket(length);
+            byte type = length > 200 ? Packet.TYPE_STREAM_FILE : Packet.TYPE_MEMORY_STRING;
+            packetTemp = callback.onArrivedNewPacket(type, length);
             packetChannel = Channels.newChannel(packetTemp.open());
 
             total = length;
