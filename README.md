@@ -119,6 +119,13 @@ TCP是可靠的，保证数据的完整性，本身也不存在丢失的可能�
 ### 1.4 文件传输的实现实现流传输 消息分片支持文件快传
 ### 流传输改造
 byte[]可支持传输的文件大小有限，改为stream传输以支持大文件的传输。
+
+
+文件传输成功进行MD5校验无误
+<div align="center">
+<img src=https://raw.githubusercontent.com/GZK0329/picture_store/master/%E6%96%87%E4%BB%B6%E6%88%90%E5%8A%9F%E4%BC%A0%E8%BE%93.PNG />
+</div>
+
 ### 消息分片
 
 
