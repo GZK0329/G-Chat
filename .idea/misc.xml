@@ -6,6 +6,9 @@
       <list>
         <option value="$PROJECT_DIR$/pom.xml" />
         <option value="$PROJECT_DIR$/lib-clink/pom.xml" />
+        <option value="$PROJECT_DIR$/sample-client/pom.xml" />
+        <option value="$PROJECT_DIR$/sample-config/pom.xml" />
+        <option value="$PROJECT_DIR$/sample-server/pom.xml" />
       </list>
     </option>
     <option name="ignoredFiles">
