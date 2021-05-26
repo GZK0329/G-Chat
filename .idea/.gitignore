@@ -6,5 +6,8 @@
 /dataSources.local.xml
 # Editor-based HTTP Client requests
 /httpRequests/
-/cache/*.*
 
+# delete file send/receive
+/cache/
+
+/.idea/
