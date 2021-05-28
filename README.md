@@ -103,7 +103,7 @@
 </div>
 
 
-线程优化前 创建2000客户端连接服务器，服务需要创建4000+线程来处理每个客户端的读取与写入
+线程优化前 创建2000客户端连接服务器，服务需要创建4000+线程来处理每个客户端的读取与写入，很多线程长时间处于阻塞状态，非常低效
 <div align="center">
 <img src=https://raw.githubusercontent.com/GZK0329/picture_store/master/%E6%9C%8D%E5%8A%A1%E5%99%A8%E4%BC%98%E5%8C%96%E5%89%8D.PNG />
 </div>
