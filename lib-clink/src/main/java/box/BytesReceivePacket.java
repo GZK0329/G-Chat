@@ -8,7 +8,7 @@ import java.io.ByteArrayOutputStream;
 /**
  * @Description: byte数组接收包的定义
  * @Author: GZK0329
- * @Date: 2021/5/
+ * @Date: 2021/1/24
  **/
 
 public class BytesReceivePacket extends AbsByteArrayReceivePacket<byte[]> {

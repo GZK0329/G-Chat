@@ -17,7 +17,7 @@ import java.util.UUID;
 /**
  * @Description: 构建连接实例
  * @Author: GZK0329
- * @Date: 2021/4/25
+ * @Date: 2021/1/25
  **/
 
 public abstract class Connector implements SocketChannelAdapter.OnChannelStatusListener, Closeable {

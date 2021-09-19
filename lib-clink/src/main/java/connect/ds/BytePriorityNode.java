@@ -3,7 +3,7 @@ package connect.ds;
 /**
  * @Description: 带优先级的节点构建
  * @Author: GZK0329
- * @Date: 2021/5/26
+ * @Date: 2021/1/26
  **/
 
 public class BytePriorityNode<Item> {

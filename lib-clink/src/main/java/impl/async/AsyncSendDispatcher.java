@@ -15,7 +15,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /**
  * @Description: 异步发送转换器
  * @Author: GZK0329
- * @Date: 2021/5/14
+ * @Date: 2021/1/14
  **/
 
 public class AsyncSendDispatcher implements SendDispatcher, Closeable, IOArgs.IOArgsEventProcessor {

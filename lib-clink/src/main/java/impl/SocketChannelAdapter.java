@@ -11,7 +11,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /**
  * @Description: 处理接收发送
  * @Author: GZK0329
- * @Date: 2021/4/25
+ * @Date: 2021/1/25
  **/
 
 public class SocketChannelAdapter implements Receiver, Sender, Closeable {

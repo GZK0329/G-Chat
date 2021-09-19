@@ -3,7 +3,7 @@ package connect;
 /**
  * @Description: 发送调度 缓存需要发送的数据 按顺序发送
  * @Author: GZK0329
- * @Date: 2021/5/14
+ * @Date: 2021/1/14
  **/
 
 public interface SendDispatcher {
