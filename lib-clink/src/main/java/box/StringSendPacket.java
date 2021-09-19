@@ -8,7 +8,7 @@ import java.nio.charset.StandardCharsets;
 /**
  * @Description: string转换为packet
  * @Author: GZK0329
- * @Date: 2021/5/14
+ * @Date: 2021/1/14
  **/
 
 public class StringSendPacket extends BytesSendPacket {

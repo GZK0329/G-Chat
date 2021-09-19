@@ -8,7 +8,7 @@ import java.io.ByteArrayOutputStream;
 /**
  * @Description: byte发送包的定义
  * @Author: GZK0329
- * @Date: 2021/5/25
+ * @Date: 2021/1/25
  **/
 
 public class BytesSendPacket extends SendPacket<ByteArrayInputStream> {

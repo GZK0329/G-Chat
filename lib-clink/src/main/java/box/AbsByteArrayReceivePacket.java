@@ -9,7 +9,7 @@ import java.io.OutputStream;
 /**
  * @Description: 基础输出包的定义
  * @Author: GZK0329
- * @Date: 2021/5/25
+ * @Date: 2021/1/25
  **/
 
 public abstract class AbsByteArrayReceivePacket<Entity> extends ReceivePacket<ByteArrayOutputStream, Entity> {
